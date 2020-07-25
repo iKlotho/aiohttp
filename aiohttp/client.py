@@ -201,9 +201,11 @@ class ClientSession:
                  timeout: Union[object, ClientTimeout]=sentinel,
                  auto_decompress: bool=True,
                  trust_env: bool=False,
+                 proxy: Optional[StrOrURL]=None,
                  requote_redirect_url: bool=True,
                  trace_configs: Optional[List[TraceConfig]]=None) -> None:
         loop = get_running_loop()
+        self.proxy = proxy
 
         if connector is None:
             connector = TCPConnector()
@@ -353,11 +355,13 @@ class ClientSession:
             for i in skip_auto_headers:
                 skip_headers.add(istr(i))
 
+        proxy = proxy if proxy else self.proxy
         if proxy is not None:
             try:
                 proxy = URL(proxy)
             except ValueError:
                 raise InvalidURL(proxy)
+
 
         if timeout is sentinel:
             real_timeout = self._timeout  # type: ClientTimeout
